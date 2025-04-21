@@ -5,7 +5,7 @@ use std::{ffi::CStr, ptr};
 
 use getters0::Getters;
 use libobs::{
-    audio_output, calldata_get_data, calldata_t, obs_encoder_set_audio, obs_encoder_set_video, obs_output_active, obs_output_create, obs_output_get_last_error, obs_output_get_name, obs_output_get_signal_handler, obs_output_release, obs_output_set_audio_encoder, obs_output_set_video_encoder, obs_output_start, obs_output_stop, obs_output_update, signal_handler_connect, signal_handler_disconnect, video_output
+    audio_output, calldata_get_data, calldata_t, obs_encoder_set_audio, obs_encoder_set_video, obs_output_active, obs_output_create, obs_output_get_last_error, obs_output_get_name, obs_output_get_signal_handler, obs_output_pause, obs_output_release, obs_output_set_audio_encoder, obs_output_set_video_encoder, obs_output_start, obs_output_stop, obs_output_update, signal_handler_connect, signal_handler_disconnect, video_output
 };
 
 use crate::context::ObsContextShutdownZST;
@@ -59,7 +59,7 @@ pub struct ObsOutputRef {
     pub(crate) audio_encoders: Rc<RefCell<Vec<Rc<ObsAudioEncoder>>>>,
 
     #[skip_getter]
-    pub(crate) output: Rc<WrappedObsOutput>,
+    pub output: Rc<WrappedObsOutput>,
     pub(crate) id: ObsString,
     pub(crate) name: ObsString,
 
@@ -231,6 +231,28 @@ impl ObsOutputRef {
         }
 
         Err(ObsError::OutputAlreadyActive)
+    }
+
+    /// Pause or resume the output.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pause` - `true` to pause the output, `false` to resume the output.
+    /// 
+    /// # Returns
+    /// 
+    /// * `Ok(true)` - The output was paused or resumed successfully.
+    /// * `Ok(false)` - Unable to pause output (Check output type, not all outputs support pause/resume).
+    /// * `Err(ObsError::OutputPauseFailure(Some(String)))` - The output failed to pause or resume.
+    pub fn pause(&self, pause: bool) -> Result<bool, ObsError> {
+        if unsafe { obs_output_active(self.output.0) } {
+            let res = unsafe { obs_output_pause(self.output.0, pause) };
+            Ok(res)
+        } else {
+            Err(ObsError::OutputPauseFailure(Some(
+                "Output is not active.".to_string(),
+            )))
+        }
     }
 
     pub fn stop(&mut self) -> Result<(), ObsError> {

@@ -77,7 +77,16 @@ fn main() -> anyhow::Result<()> {
     let mut scene = context.get_output("MAIN").unwrap();
     scene.start()?;
 
-    sleep(Duration::from_secs(15));
+    sleep(Duration::from_secs(4));
+
+    let paused = scene.pause(true)?;
+    println!("Paused: {:?}", paused);
+
+    sleep(Duration::from_secs(4));
+
+    scene.pause(false)?;
+
+    sleep(Duration::from_secs(4));
 
     // Stop the recording
     scene.stop()?;
