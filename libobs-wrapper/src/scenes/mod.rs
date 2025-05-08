@@ -7,7 +7,7 @@ use getters0::Getters;
 use libobs::{obs_scene_create, obs_scene_t, obs_set_output_source, obs_source_t};
 
 use crate::{
-    context::ObsContextShutdownZST, sources::ObsSourceRef, unsafe_send::WrappedObsScene, utils::{ObsError, ObsString, SourceInfo}
+    context::ObsContextShutdownZST, sources::ObsSourceRef, unsafe_send::WrappedObsScene, utils::{ObsError, ObsPath, ObsString, SourceInfo}
 };
 
 #[derive(Debug)]
@@ -122,7 +122,63 @@ impl ObsSceneRef {
         Ok(())
     }
 
+    pub fn custom(&self) {
+        unsafe {
+            let scene_item = libobs::obs_scene_find_source(self.scene.0, ObsString::new("CAMERA").as_ptr());
+            let mut main_pos: libobs::vec2 = std::mem::zeroed();
+            let mut main_scale: libobs::vec2 = std::mem::zeroed();
+            let obs_bound_type =  libobs::obs_sceneitem_get_bounds_type(scene_item);
+
+            libobs::obs_sceneitem_get_pos(scene_item, &mut main_pos);
+            libobs::obs_sceneitem_get_scale(scene_item, &mut main_scale);
+
+            let x = main_pos.__bindgen_anon_1.__bindgen_anon_1.x + (main_scale.__bindgen_anon_1.__bindgen_anon_1.x * 0.8);
+            let y = main_pos.__bindgen_anon_1.__bindgen_anon_1.y + (main_scale.__bindgen_anon_1.__bindgen_anon_1.y * 0.8);
+            let camera_pos = create_vec2(x, y);
+            let camera_scale = create_vec2(0.4, 0.4);
+
+            libobs::obs_sceneitem_set_pos(scene_item, &camera_pos);
+            libobs::obs_sceneitem_set_scale(scene_item, &camera_scale);
+
+            let crop_filter = libobs::obs_source_create(ObsString::new("mask_filter_v2").as_ptr(), ObsString::new("Image Mask/Blend").as_ptr(), std::ptr::null_mut(), std::ptr::null_mut());
+
+            // Set crop settings to make it circular
+            let mut mask_settings = libobs::obs_data_create();
+            // libobs::obs_data_set_int(crop_settings, ObsString::new("left").as_ptr(), 0);
+            // libobs::obs_data_set_int(crop_settings, ObsString::new("top").as_ptr(), 0);
+            // libobs::obs_data_set_int(crop_settings, ObsString::new("right").as_ptr(), 0);
+            // libobs::obs_data_set_int(crop_settings, ObsString::new("bottom").as_ptr(), 0);
+
+            // let mut mask_settings = obs_data_create();
+            // libobs::obs_data_set_string(mask_settings, ObsString::new("type").as_ptr(), ObsString::new("image_mask").as_ptr());
+            libobs::obs_data_set_string(mask_settings, ObsString::new("image_path").as_ptr(), ObsPath::new("C:\\Users\\Admin2\\Downloads\\circular_mask.jpg").build().as_ptr());
+            // libobs::obs_data_set_int(mask_settings, ObsString::new("opacity").as_ptr(), 100);
+            // libobs::obs_data_set_bool(mask_settings, ObsString::new("invert").as_ptr(), false); 
+            libobs::obs_source_update(crop_filter, mask_settings);
+            libobs::obs_data_release(mask_settings);
+
+            // Add the filter to the camera source
+            let source = self.get_source_mut("CAMERA").unwrap();
+            libobs::obs_source_filter_add(source.source.0, crop_filter);
+        }
+    }
+
     pub fn as_ptr(&self) -> *mut obs_scene_t {
         self.scene.0
     }
 }
+
+fn create_vec2(x: f32, y: f32) -> libobs::vec2 {
+    libobs::vec2 {
+        __bindgen_anon_1: libobs::vec2__bindgen_ty_1 {
+            __bindgen_anon_1: libobs::vec2__bindgen_ty_1__bindgen_ty_1 {
+                x,
+                y
+            }
+        }
+    }
+}
+
+
+
+

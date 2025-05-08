@@ -52,9 +52,21 @@ unsafe extern "C" fn render_display(data: *mut c_void, _cx: u32, _cy: u32) {
 
     let (x, y) = s.get_pos();
     let (width, height) = s.get_size();
+    // println!("Rendering display width: {:#?}, height: {:#?}", width, height);
+
+    let (window_width, window_height) = s.manager.read().get_parent_window_size();
+    let x_shift = (window_width -  width as i32) / 2;
+    println!("x_shift: {:#?}", x_shift);
+    // if 
+    s.set_pos(x_shift, y).unwrap();
+    // println!("window_width: {:#?}, window_height: {:#?}, x_shift: {:#?}", window_width, window_height  , x_shift);
 
     let mut ovi: obs_video_info = std::mem::zeroed();
+    // println!("Rendering display {:#?}", ovi);
+
     obs_get_video_info(&mut ovi);
+
+    // println!("Rendering display {:#?}", ovi);
 
     gs_viewport_push();
     gs_projection_push();
@@ -67,7 +79,7 @@ unsafe extern "C" fn render_display(data: *mut c_void, _cx: u32, _cy: u32) {
         -100.0f32,
         100.0f32,
     );
-    gs_set_viewport(x as i32, y as i32, width as i32, height as i32);
+    gs_set_viewport(0 as i32, 0 as i32, width as i32, height as i32);
     //draw_backdrop(&s.buffers, ovi.base_width as f32, ovi.base_height as f32);
 
     obs_render_main_texture();

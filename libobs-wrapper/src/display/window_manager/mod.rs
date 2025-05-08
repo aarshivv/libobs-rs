@@ -116,11 +116,15 @@ fn try_register_class() -> windows::core::Result<()> {
 }
 
 #[derive(Debug)]
-pub struct DisplayWindowManager {
+pub struct 
+
+
+DisplayWindowManager {
     // Shouldn't really be needed
     message_thread: Option<std::thread::JoinHandle<()>>,
     should_exit: Arc<AtomicBool>,
     hwnd: WrappedHWND,
+    parent_hwnd: WrappedHWND,
 
     x: i32,
     y: i32,
@@ -144,13 +148,13 @@ unsafe impl Sync for SendableHWND {}
 unsafe impl Send for SendableHWND {}
 
 impl DisplayWindowManager {
-    pub fn new(parent: HWND, x: i32, y: i32, width: u32, height: u32) -> anyhow::Result<Self> {
+    pub fn new(parent_hwnd: HWND, x: i32, y: i32, width: u32, height: u32) -> anyhow::Result<Self> {
         let (tx, rx) = oneshot::channel();
 
         let should_exit = Arc::new(AtomicBool::new(false));
         let tmp = should_exit.clone();
 
-        let parent = Mutex::new(SendableHWND(parent));
+        let parent = Mutex::new(SendableHWND(parent_hwnd));
         let message_thread = std::thread::spawn(move || {
             let parent = parent.lock().unwrap().0;
             // We have to have the whole window creation stuff here as well so the message loop functions
@@ -256,6 +260,7 @@ impl DisplayWindowManager {
             height,
             scale: 1.0,
             hwnd: WrappedHWND(window.0),
+            parent_hwnd: WrappedHWND(parent_hwnd),
             should_exit,
             message_thread: Some(message_thread),
             render_at_bottom: false,
@@ -266,6 +271,10 @@ impl DisplayWindowManager {
 
     pub fn get_child_handle(&self) -> HWND {
         self.hwnd.0.clone()
+    }
+
+    pub fn get_parent_window_size(&self) -> (i32, i32) {
+        self.parent_hwnd.get_window_size()
     }
 }
 

@@ -77,6 +77,10 @@ fn main() -> anyhow::Result<()> {
     let mut scene = context.get_output("MAIN").unwrap();
     scene.start()?;
 
+    // unsafe {
+        
+    // }
+
     sleep(Duration::from_secs(4));
 
     let paused = scene.pause(true)?;

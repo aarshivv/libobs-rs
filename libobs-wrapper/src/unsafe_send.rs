@@ -2,7 +2,7 @@ use libobs::{
     obs_data, obs_display_t, obs_encoder, obs_output, obs_scene_t, obs_source,
     obs_video_info,
 };
-use windows::Win32::Foundation::HWND;
+use windows::Win32::{Foundation::{HWND, RECT}, UI::WindowsAndMessaging::GetClientRect};
 
 macro_rules! impl_send_sync {
     ($n:ident, $t:ty) => {
@@ -39,3 +39,17 @@ impl PartialEq for WrappedObsVideoInfo {
 }
 
 impl Eq for WrappedObsVideoInfo {}
+
+impl WrappedHWND {
+    pub fn get_window_size(&self) -> (i32, i32) {
+        unsafe {
+            let mut rect = RECT::default();
+            GetClientRect(self.0, &mut rect).unwrap();
+            
+            let width = rect.right - rect.left;
+            let height = rect.bottom - rect.top;
+            
+            (width, height)
+        }
+    }
+}
