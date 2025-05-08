@@ -151,7 +151,7 @@ impl ObsSceneRef {
 
             // let mut mask_settings = obs_data_create();
             // libobs::obs_data_set_string(mask_settings, ObsString::new("type").as_ptr(), ObsString::new("image_mask").as_ptr());
-            libobs::obs_data_set_string(mask_settings, ObsString::new("image_path").as_ptr(), ObsPath::new("C:\\Users\\Admin2\\Downloads\\circular_mask.jpg").build().as_ptr());
+            libobs::obs_data_set_string(mask_settings, ObsString::new("image_path").as_ptr(),  ObsPath::from_relative("obs-plugins/64bit/circular_mask.jpg").build().as_ptr());
             // libobs::obs_data_set_int(mask_settings, ObsString::new("opacity").as_ptr(), 100);
             // libobs::obs_data_set_bool(mask_settings, ObsString::new("invert").as_ptr(), false); 
             libobs::obs_source_update(crop_filter, mask_settings);
