@@ -106,3 +106,5 @@ impl Drop for _ObsSourceGuard {
         unsafe { obs_source_release(self.source.0) }
     }
 }
+
+pub type ObsFilterRef = ObsSourceRef;

@@ -33,7 +33,7 @@ impl WindowPositionTrait for ObsDisplayRef {
     }
 
     fn set_pos(&self, x: i32, y: i32) -> windows::core::Result<()> {
-        log::trace!("Set pos {x} {y}");
+        // log::trace!("Set pos {x} {y}");
         let mut m = self.manager.write();
 
         assert!(

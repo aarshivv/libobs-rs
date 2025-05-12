@@ -9,14 +9,7 @@ use std::{
 };
 
 use crate::{
-    crash_handler::main_crash_handler,
-    data::{output::ObsOutputRef, video::ObsVideoInfo, ObsData},
-    display::{ObsDisplayCreationData, ObsDisplayRef},
-    enums::{ObsLogLevel, ObsResetVideoStatus},
-    logger::{extern_log_callback, internal_log_global, LOGGER},
-    scenes::ObsSceneRef,
-    unsafe_send::WrappedObsScene,
-    utils::{ObsError, ObsModules, ObsString, OutputInfo, StartupInfo, initialization::load_debug_privilege},
+    crash_handler::main_crash_handler, data::{output::ObsOutputRef, video::ObsVideoInfo, ObsData}, display::{ObsDisplayCreationData, ObsDisplayRef}, enums::{ObsLogLevel, ObsResetVideoStatus}, logger::{extern_log_callback, internal_log_global, LOGGER}, scenes::ObsSceneRef, sources::{ObsFilterRef, ObsSourceRef}, unsafe_send::WrappedObsScene, utils::{initialization::load_debug_privilege, FilterInfo, ObsError, ObsModules, ObsString, OutputInfo, StartupInfo}
 };
 use anyhow::Result;
 use getters0::Getters;
@@ -61,6 +54,9 @@ pub struct ObsContext {
 
     #[get_mut]
     pub(crate) scenes: Rc<RefCell<Vec<ObsSceneRef>>>,
+
+    #[get_mut]
+    pub(crate) filters: Rc<RefCell<Vec<ObsFilterRef>>>,
 
     #[skip_getter]
     pub(crate) active_scene: Rc<RefCell<Option<WrappedObsScene>>>,
@@ -216,6 +212,7 @@ impl ObsContext {
             displays: Rc::new(RefCell::new(HashMap::new())),
             active_scene: Rc::new(RefCell::new(None)),
             scenes: Rc::new(RefCell::new(vec![])),
+            filters: Rc::new(RefCell::new(vec![])),
             _obs_modules: Rc::new(obs_modules),
             context_shutdown_zst: Rc::new(ObsContextShutdownZST {}),
         })
@@ -295,6 +292,28 @@ impl ObsContext {
 
             Err(x) => Err(x),
         };
+    }
+
+    pub fn add_obsfilter(&mut self, info: FilterInfo) -> Result<ObsFilterRef, ObsError> {
+        let filter = ObsFilterRef::new(info.id, info.name, info.settings, info.hotkey_data);
+
+        return match filter {
+            Ok(x) => {
+                let tmp = x.clone();
+                self.filters.borrow_mut().push(x);
+                Ok(tmp)
+            }
+
+            Err(x) => Err(x),
+        };
+    }
+
+    pub fn get_filter(&mut self, name: &str) -> Option<ObsFilterRef> {
+        self.filters
+            .borrow()
+            .iter()
+            .find(|x| x.name().to_string().as_str() == name)
+            .map(|e| e.clone())
     }
 
     /// Creates a new display and returns its ID.

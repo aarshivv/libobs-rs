@@ -1,6 +1,5 @@
 use libobs::{
-    obs_data, obs_display_t, obs_encoder, obs_output, obs_scene_t, obs_source,
-    obs_video_info,
+    obs_data, obs_display_t, obs_encoder, obs_output, obs_scene_t, obs_sceneitem_t, obs_source, obs_video_info
 };
 use windows::Win32::{Foundation::{HWND, RECT}, UI::WindowsAndMessaging::GetClientRect};
 
@@ -25,6 +24,7 @@ impl_send_sync! { WrappedObsVideoInfo, obs_video_info}
 impl_send_sync! { WrappedObsSource, *mut obs_source}
 impl_send_sync! { WrappedVoidPtr, *mut std::ffi::c_void}
 impl_send_sync! { WrappedHWND, HWND }
+impl_send_sync! { WrappedObsSceneItem, *mut obs_sceneitem_t }
 
 impl Clone for WrappedObsVideoInfo {
     fn clone(&self) -> Self {
