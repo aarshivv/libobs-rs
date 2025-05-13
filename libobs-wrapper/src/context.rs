@@ -9,7 +9,7 @@ use std::{
 };
 
 use crate::{
-    crash_handler::main_crash_handler, data::{output::ObsOutputRef, video::ObsVideoInfo, ObsData}, display::{ObsDisplayCreationData, ObsDisplayRef}, enums::{ObsLogLevel, ObsResetVideoStatus}, logger::{extern_log_callback, internal_log_global, LOGGER}, scenes::ObsSceneRef, sources::{ObsFilterRef, ObsSourceRef}, unsafe_send::WrappedObsScene, utils::{initialization::load_debug_privilege, FilterInfo, ObsError, ObsModules, ObsString, OutputInfo, StartupInfo}
+    crash_handler::main_crash_handler, data::{output::ObsOutputRef, video::ObsVideoInfo, ObsData}, display::{ObsDisplayCreationData, ObsDisplayRef, WindowPositionTrait}, enums::{ObsLogLevel, ObsResetVideoStatus}, logger::{extern_log_callback, internal_log_global, LOGGER}, scenes::ObsSceneRef, sources::{ObsFilterRef, ObsSourceRef}, unsafe_send::WrappedObsScene, utils::{initialization::load_debug_privilege, FilterInfo, ObsError, ObsModules, ObsString, OutputInfo, StartupInfo}
 };
 use anyhow::Result;
 use getters0::Getters;
@@ -332,6 +332,20 @@ impl ObsContext {
 
     pub fn remove_display_by_id(&mut self, id: usize) {
         self.displays.borrow_mut().remove(&id);
+    }
+
+    pub fn update_display_pos_by_id(&self, id: usize, x: i32, y: i32) -> Result<(), ObsError> {
+        self.displays.borrow().get(&id).map(|dis| dis.set_pos(x, y).map_err(|e|{
+            log::error!("Set pos {x} {y} failed: {}", e);
+            ObsError::Failure
+        })).unwrap_or_else(|| Err(ObsError::DisplayNotFound))
+    }
+
+    pub fn update_display_size_by_id(&self, id: usize, width: u32, height: u32) -> Result<(), ObsError> {
+        self.displays.borrow().get(&id).map(|dis| dis.set_size(width, height).map_err(|e|{
+            log::error!("Set size {width} {height} failed: {}", e);
+            ObsError::Failure
+        })).unwrap_or_else(|| Err(ObsError::DisplayNotFound))
     }
 
     pub fn get_display_by_id(&self, id: usize) -> Option<Rc<Pin<Box<ObsDisplayRef>>>> {

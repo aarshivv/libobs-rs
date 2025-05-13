@@ -54,11 +54,11 @@ unsafe extern "C" fn render_display(data: *mut c_void, _cx: u32, _cy: u32) {
     let (width, height) = s.get_size();
     // println!("Rendering display width: {:#?}, height: {:#?}", width, height);
 
-    let (window_width, window_height) = s.manager.read().get_parent_window_size();
-    let x_shift = (window_width -  width as i32) / 2;
-    println!("x_shift: {:#?}", x_shift);
-    // if 
-    s.set_pos(x_shift, y).unwrap();
+    // let (window_width, window_height) = s.manager.read().get_parent_window_size();
+    // let x_shift = (window_width -  width as i32) / 2;
+    // println!("x_shift: {:#?}", x_shift);
+    // // if 
+    // s.set_pos(x_shift, y).unwrap();
     // println!("window_width: {:#?}, window_height: {:#?}, x_shift: {:#?}", window_width, window_height  , x_shift);
 
     let mut ovi: obs_video_info = std::mem::zeroed();

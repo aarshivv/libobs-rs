@@ -27,7 +27,7 @@ pub enum ObsError {
     OutputPauseFailure(Option<String>),
     OutputNotFound,
     SourceNotFound,
-
+    DisplayNotFound,
     /// Native error from the Windows API when creating a display
     DisplayCreationError(String),
 
@@ -53,6 +53,7 @@ impl Display for ObsError {
             ObsError::DisplayCreationError(e) => write!(f, "Native error from the Windows API when creating a display: {:?}", e),
             ObsError::OutputSaveBufferFailure(e) => write!(f, "Couldn't save output buffer: {:?}", e),
             ObsError::SourceNotFound => write!(f, "Source not found."),
+            ObsError::DisplayNotFound => write!(f, "Display not found."),
         }
     }
 }
