@@ -112,7 +112,7 @@ impl ObsDisplayRef {
         } = data.clone();
 
         let mut manager =
-            DisplayWindowManager::new(parent_window.clone(), x as i32, y as i32, width, height)?;
+            DisplayWindowManager::new(parent_window.clone(), x, y, width, height)?;
 
         let child_handle = manager.get_child_handle();
         let init_data = data.build(gs_window {
