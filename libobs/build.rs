@@ -290,7 +290,7 @@ fn main() {
         "cargo:rustc-link-search=native={}",
         env!("CARGO_MANIFEST_DIR")
     );
-    println!("cargo:rustc-link-lib=dylib=obs");
+    println!("cargo:rustc-link-lib=static=obs");
 
     if let Some(path) = env::var("LIBOBS_PATH").ok() {
         println!("cargo:rustc-link-search=native={}", path);
