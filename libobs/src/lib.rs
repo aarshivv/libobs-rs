@@ -14,7 +14,7 @@
 mod test;
 
 mod bindings {
-    include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+    include!("bindings.rs");
 }
 
 pub use bindings::*;

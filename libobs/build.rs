@@ -1,4 +1,4 @@
-use std::{collections::HashSet, env, path::PathBuf};
+use std::{collections::HashSet, env, fs, path::PathBuf};
 
 #[cfg(feature = "debug-tracing")]
 use std::{
@@ -304,33 +304,36 @@ fn main() {
     //     println!("cargo:rustc-link-search=native={}", path);
     // }
 
-    let bindings = bindgen::builder()
-        .header("headers/wrapper.h")
-        .clang_arg(format!("-I{}", "headers/obs"))
-        .blocklist_function("_bindgen_ty_2")
-        .parse_callbacks(Box::new(get_ignored_macros()))
-        // .blocklist_function("_+.*")
-        // .blocklist_file(".*Windows\\.h")
-        // .blocklist_file(".*wchar\\.h")
-        // .blocklist_function("bwstrdup_n")
-        // .blocklist_function("bwstrdup")
-        .derive_copy(true)
-        .derive_debug(true)
-        .derive_default(false)
-        .derive_partialeq(true)
-        .derive_eq(true)
-        .derive_partialord(true)
-        .derive_ord(true)
-        .merge_extern_blocks(true)
-        .generate()
-        .expect("Error generating bindings");
+    // let bindings = bindgen::builder()
+    //     .header("headers/wrapper.h")
+    //     .clang_arg(format!("-I{}", "headers/obs"))
+    //     .blocklist_function("_bindgen_ty_2")
+    //     .parse_callbacks(Box::new(get_ignored_macros()))
+    //     // .blocklist_function("_+.*")
+    //     // .blocklist_file(".*Windows\\.h")
+    //     // .blocklist_file(".*wchar\\.h")
+    //     // .blocklist_function("bwstrdup_n")
+    //     // .blocklist_function("bwstrdup")
+    //     .derive_copy(true)
+    //     .derive_debug(true)
+    //     .derive_default(false)
+    //     .derive_partialeq(true)
+    //     .derive_eq(true)
+    //     .derive_partialord(true)
+    //     .derive_ord(true)
+    //     .merge_extern_blocks(true)
+    //     .generate()
+    //     .expect("Error generating bindings");
+
+    // let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    // let bindings_path = out_path.join("bindings.rs");
+
+    // bindings
+    //     .write_to_file(&bindings_path)
+    //     .expect("Couldn't write bindings!");
 
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let bindings_path = out_path.join("bindings.rs");
-
-    bindings
-        .write_to_file(&bindings_path)
-        .expect("Couldn't write bindings!");
+    fs::copy("src/bindings.rs", out_path.join("bindings.rs")).unwrap();
 
     #[cfg(feature = "debug-tracing")]
     {
