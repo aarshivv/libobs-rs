@@ -149,117 +149,117 @@ unsafe impl Send for SendableHWND {}
 
 impl DisplayWindowManager {
     pub fn new(parent_hwnd: HWND, x: i32, y: i32, width: u32, height: u32) -> anyhow::Result<Self> {
-        let (tx, rx) = oneshot::channel();
+        // let (tx, rx) = oneshot::channel();
 
         let should_exit = Arc::new(AtomicBool::new(false));
         let tmp = should_exit.clone();
 
         let parent = Mutex::new(SendableHWND(parent_hwnd));
         let message_thread = std::thread::spawn(move || {
-            let parent = parent.lock().unwrap().0;
+            // let parent = parent.lock().unwrap().0;
             // We have to have the whole window creation stuff here as well so the message loop functions
-            let create = move || {
-                log::trace!("Registering class...");
-                try_register_class()?;
-                let win8 = is_windows8_or_greater()?;
-                let enabled = unsafe { DwmIsCompositionEnabled()?.as_bool() };
+            // let create = move || {
+            //     log::trace!("Registering class...");
+            //     try_register_class()?;
+            //     let win8 = is_windows8_or_greater()?;
+            //     let enabled = unsafe { DwmIsCompositionEnabled()?.as_bool() };
 
-                let mut window_style = WS_EX_TRANSPARENT;
-                if win8 && enabled {
-                    window_style |= WS_EX_COMPOSITED;
-                }
+            //     let mut window_style = WS_EX_TRANSPARENT;
+            //     if win8 && enabled {
+            //         window_style |= WS_EX_COMPOSITED;
+            //     }
 
-                let instance = unsafe { GetModuleHandleW(PCWSTR::null())? };
+            //     let instance = unsafe { GetModuleHandleW(PCWSTR::null())? };
 
-                let class_name = HSTRING::from("Win32DisplayClass");
-                let window_name = HSTRING::from("LibObsChildWindowPreview");
-                log::trace!("Creating window...");
+            //     let class_name = HSTRING::from("Win32DisplayClass");
+            //     let window_name = HSTRING::from("LibObsChildWindowPreview");
+            //     log::trace!("Creating window...");
 
-                log::debug!(
-                    "Creating window with x: {}, y: {}, width: {}, height: {}",
-                    x,
-                    y,
-                    width,
-                    height
-                );
-                let window = unsafe {
-                    // More at https://github.com/stream-labs/obs-studio-node/blob/4e19d8a61a4dd7744e75ce77624c664e371cbfcf/obs-studio-server/source/nodeobs_display.cpp#L170
-                    CreateWindowExW(
-                        WS_EX_LAYERED,
-                        &class_name,
-                        &window_name,
-                        WS_POPUP | WS_VISIBLE,
-                        x,
-                        y,
-                        width as i32,
-                        height as i32,
-                        None,
-                        None,
-                        Some(instance.into()),
-                        None,
-                    )?
-                };
+            //     log::debug!(
+            //         "Creating window with x: {}, y: {}, width: {}, height: {}",
+            //         x,
+            //         y,
+            //         width,
+            //         height
+            //     );
+            //     let window = unsafe {
+            //         // More at https://github.com/stream-labs/obs-studio-node/blob/4e19d8a61a4dd7744e75ce77624c664e371cbfcf/obs-studio-server/source/nodeobs_display.cpp#L170
+            //         CreateWindowExW(
+            //             WS_EX_LAYERED,
+            //             &class_name,
+            //             &window_name,
+            //             WS_POPUP | WS_VISIBLE,
+            //             x,
+            //             y,
+            //             width as i32,
+            //             height as i32,
+            //             None,
+            //             None,
+            //             Some(instance.into()),
+            //             None,
+            //         )?
+            //     };
 
-                log::trace!("HWND is {:?}", window);
-                if win8 || !enabled {
-                    log::trace!("Setting attributes alpha...");
-                    unsafe {
-                        SetLayeredWindowAttributes(window, COLORREF(0), 255, LWA_ALPHA)?;
-                    }
-                }
+            //     log::trace!("HWND is {:?}", window);
+            //     if win8 || !enabled {
+            //         log::trace!("Setting attributes alpha...");
+            //         unsafe {
+            //             SetLayeredWindowAttributes(window, COLORREF(0), 255, LWA_ALPHA)?;
+            //         }
+            //     }
 
-                unsafe {
-                    log::trace!("Setting parent...");
-                    SetParent(window, Some(parent))?;
-                    log::trace!("Setting styles...");
-                    let mut style = GetWindowLongPtrW(window, GWL_STYLE);
-                    //TODO Check casts here
-                    style &= !(WS_POPUP.0 as isize);
-                    style |= WS_CHILD.0 as isize;
+            //     unsafe {
+            //         log::trace!("Setting parent...");
+            //         SetParent(window, Some(parent))?;
+            //         log::trace!("Setting styles...");
+            //         let mut style = GetWindowLongPtrW(window, GWL_STYLE);
+            //         //TODO Check casts here
+            //         style &= !(WS_POPUP.0 as isize);
+            //         style |= WS_CHILD.0 as isize;
 
-                    SetWindowLongPtrW(window, GWL_STYLE, style);
+            //         SetWindowLongPtrW(window, GWL_STYLE, style);
 
-                    let mut ex_style = GetWindowLongPtrW(window, GWL_EXSTYLE);
-                    ex_style |= window_style.0 as isize;
+            //         let mut ex_style = GetWindowLongPtrW(window, GWL_EXSTYLE);
+            //         ex_style |= window_style.0 as isize;
 
-                    SetWindowLongPtrW(window, GWL_EXSTYLE, ex_style);
-                }
+            //         SetWindowLongPtrW(window, GWL_EXSTYLE, ex_style);
+            //     }
 
-                Result::<SendableHWND, anyhow::Error>::Ok(SendableHWND(window))
-            };
+            //     Result::<SendableHWND, anyhow::Error>::Ok(SendableHWND(window))
+            // };
 
-            let r = create();
-            let window = r.as_ref().ok().map(|r| r.0.clone());
-            tx.send(r).unwrap();
-            if window.is_none() {
-                return;
-            }
-            let window = window.unwrap();
+            // let r = create();
+            // let window = r.as_ref().ok().map(|r| r.0.clone());
+            // tx.send(r).unwrap();
+            // if window.is_none() {
+            //     return;
+            // }
+            // let window = window.unwrap();
 
-            log::trace!("Starting up message thread...");
-            let mut msg = MSG::default();
-            unsafe {
-                while !tmp.load(Ordering::Relaxed)
-                    && GetMessageW(&mut msg, Some(window), 0, 0).as_bool()
-                {
-                    //TODO check if this can really be ignored
-                    let _ = TranslateMessage(&msg);
-                    DispatchMessageW(&msg);
-                }
-            }
+            // log::trace!("Starting up message thread...");
+            // let mut msg = MSG::default();
+            // unsafe {
+            //     while !tmp.load(Ordering::Relaxed)
+            //         && GetMessageW(&mut msg, Some(window), 0, 0).as_bool()
+            //     {
+            //         //TODO check if this can really be ignored
+            //         let _ = TranslateMessage(&msg);
+            //         DispatchMessageW(&msg);
+            //     }
+            // }
 
-            log::trace!("Exiting message thread...");
+            // log::trace!("Exiting message thread...");
         });
 
-        let window = rx.recv();
-        let window = window??;
+        // let window = rx.recv();
+        // let window = window??;
         Ok(Self {
             x,
             y,
             width,
             height,
             scale: 1.0,
-            hwnd: WrappedHWND(window.0),
+            hwnd: WrappedHWND(parent_hwnd),
             parent_hwnd: WrappedHWND(parent_hwnd),
             should_exit,
             message_thread: Some(message_thread),

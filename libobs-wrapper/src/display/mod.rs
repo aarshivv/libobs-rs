@@ -23,7 +23,7 @@ use libobs::{
     gs_viewport_push, obs_get_video_info, obs_render_main_texture, obs_video_info,
 };
 
-use crate::{context::ObsContextShutdownZST, unsafe_send::{WrappedObsDisplay, WrappedVoidPtr}};
+use crate::{context::ObsContextShutdownZST, unsafe_send::{WrappedObsDisplay, WrappedVoidPtr}, utils::ObsString};
 
 static ID_COUNTER: AtomicUsize = AtomicUsize::new(1);
 #[derive(Debug, Clone)]
@@ -60,6 +60,20 @@ unsafe extern "C" fn render_display(data: *mut c_void, _cx: u32, _cy: u32) {
     // // if 
     // s.set_pos(x_shift, y).unwrap();
     // println!("window_width: {:#?}, window_height: {:#?}, x_shift: {:#?}", window_width, window_height  , x_shift);
+    let scene = libobs::obs_get_source_by_name(ObsString::from("MAIN").as_ptr());
+    let scene_pt = libobs::obs_scene_from_source(scene);
+    let scene_source = libobs::obs_scene_get_source(scene_pt);
+    libobs::obs_source_video_render(scene_source);
+    let frame = libobs::obs_source_get_frame(scene_source);
+    println!("Frame: {:?}", frame);
+    
+    if !frame.is_null() {
+        println!("HERE FINALLY");
+        let frame_data = &*frame;
+        // Use frame_data here
+        // frame_data.data[0] contains the frame data
+        // frame_data.width and frame_data.height give dimensions
+    }
 
     let mut ovi: obs_video_info = std::mem::zeroed();
     // println!("Rendering display {:#?}", ovi);
@@ -114,9 +128,9 @@ impl ObsDisplayRef {
         let mut manager =
             DisplayWindowManager::new(parent_window.clone(), x, y, width, height)?;
 
-        let child_handle = manager.get_child_handle();
+        // let child_handle = manager.get_child_handle();
         let init_data = data.build(gs_window {
-            hwnd: child_handle.0,
+            hwnd: parent_window.0,
         });
 
         log::trace!("Creating obs display...");
